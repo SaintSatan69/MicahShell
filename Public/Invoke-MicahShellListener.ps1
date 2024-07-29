@@ -13,7 +13,11 @@ function Invoke-MicahShellListener{
             valuefrompipeline=$true,
             Position=2
         )]
-        [X509Certificate2]$certificatethumbprint
+        [X509Certificate2]$certificatethumbprint,
+
+        [switch]$bidirectional,
+
+        [string]$bidirectionalpayload
     )
     $cert = Get-ChildItem Cert:\LocalMachine\my | where-object {$_.Thumbprint -eq $certificatethumbprint}
     $certprivate = [System.Security.Cryptography.X509Certificates.RSACertificateExtensions]::GetRSAPrivateKey($cert)
@@ -32,9 +36,5 @@ function Invoke-MicahShellListener{
     $symetrickeybytes = new-object system.byte[] 256
     $symetrickeyencrypted = $stream.Read($symetrickeybytes,0,$symetrickeybytes.Length)
     $symetrickey = certprivate.decrypt($symetrickeyencrypted,"RSAencryptionpadding.OapsSHA1")
-    while (($i = $stream.Read($bytes,0,$bytes.Length)) -ne 0){
-        $EncodedText = New-Object System.Text.ASCIIEncoding
-        $data = $EncodedText.GetString($bytes,0, $i)
-    }
     return $data
 }
